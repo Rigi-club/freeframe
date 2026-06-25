@@ -86,6 +86,9 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
       await copyToClipboard(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // ignore
+    }
   }
 
   return (
