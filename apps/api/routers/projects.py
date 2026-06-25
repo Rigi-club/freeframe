@@ -27,7 +27,9 @@ def _resolve_poster_url(project: Project) -> str | None:
         return generate_presigned_get_url(project.poster_s3_key)
     return None
 
-def _require_project_owner(db: Session, project_id: uuid.UUID, user: User) -> ProjectMember:
+def _require_project_owner(db: Session, project_id: uuid.UUID, user: User) -> ProjectMember | None:
+    if user.is_superadmin:
+        return None
     member = db.query(ProjectMember).filter(
         ProjectMember.project_id == project_id,
         ProjectMember.user_id == user.id,
@@ -65,14 +67,18 @@ def list_projects(db: Session = Depends(get_db), current_user: User = Depends(ge
     membership_map = {m.project_id: m.role for m in memberships}
     member_project_ids = list(membership_map.keys())
 
-    # Get projects: user's memberships + all public projects
-    projects = db.query(Project).filter(
-        Project.deleted_at.is_(None),
-        or_(
-            Project.id.in_(member_project_ids) if member_project_ids else False,
-            Project.is_public == True,
-        ),
-    ).all()
+    if current_user.is_superadmin:
+        # Superadmin sees all projects
+        projects = db.query(Project).filter(Project.deleted_at.is_(None)).all()
+    else:
+        # Get projects: user's memberships + all public projects
+        projects = db.query(Project).filter(
+            Project.deleted_at.is_(None),
+            or_(
+                Project.id.in_(member_project_ids) if member_project_ids else False,
+                Project.is_public == True,
+            ),
+        ).all()
 
     all_project_ids = [p.id for p in projects]
     if not all_project_ids:
@@ -112,7 +118,7 @@ def list_projects(db: Session = Depends(get_db), current_user: User = Depends(ge
         resp.asset_count = asset_counts.get(p.id, 0)
         resp.storage_bytes = storage_map.get(p.id, 0)
         resp.member_count = member_counts.get(p.id, 0)
-        resp.role = membership_map.get(p.id)
+        resp.role = membership_map.get(p.id) or (ProjectRole.owner if current_user.is_superadmin else None)
         result.append(resp)
 
     return result
@@ -125,12 +131,14 @@ def get_project(project_id: uuid.UUID, db: Session = Depends(get_db), current_us
         ProjectMember.user_id == current_user.id,
         ProjectMember.deleted_at.is_(None),
     ).first()
-    if not member and not project.is_public:
+    if not member and not project.is_public and not current_user.is_superadmin:
         raise HTTPException(status_code=403, detail="Not a project member")
     resp = ProjectResponse.model_validate(project)
     resp.poster_url = _resolve_poster_url(project)
     if member:
         resp.role = member.role
+    elif current_user.is_superadmin:
+        resp.role = ProjectRole.owner
     # Calculate storage, asset count, member count
     resp.asset_count = db.query(func.count(Asset.id)).filter(
         Asset.project_id == project_id, Asset.deleted_at.is_(None),
@@ -171,14 +179,15 @@ def delete_project(project_id: uuid.UUID, db: Session = Depends(get_db), current
 @router.get("/{project_id}/members", response_model=list[ProjectMemberResponse])
 def list_project_members(project_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     _get_project(db, project_id)
-    # Verify user is a member
-    member = db.query(ProjectMember).filter(
-        ProjectMember.project_id == project_id,
-        ProjectMember.user_id == current_user.id,
-        ProjectMember.deleted_at.is_(None),
-    ).first()
-    if not member:
-        raise HTTPException(status_code=403, detail="Not a project member")
+    if not current_user.is_superadmin:
+        # Verify user is a member
+        member = db.query(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == current_user.id,
+            ProjectMember.deleted_at.is_(None),
+        ).first()
+        if not member:
+            raise HTTPException(status_code=403, detail="Not a project member")
     
     members = db.query(ProjectMember).filter(
         ProjectMember.project_id == project_id,

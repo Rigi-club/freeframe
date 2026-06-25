@@ -23,11 +23,14 @@ def require_project_role(
     project_id: uuid.UUID,
     user: User,
     minimum_role: ProjectRole,
-) -> ProjectMember:
+) -> ProjectMember | None:
     """Require the user to have at least `minimum_role` on the project.
 
     Role hierarchy (descending): owner > editor > reviewer > viewer
+    Superadmins bypass all role checks.
     """
+    if user.is_superadmin:
+        return None
     ROLE_RANK = {
         ProjectRole.owner: 4,
         ProjectRole.editor: 3,
@@ -58,7 +61,11 @@ def is_public_project(db: Session, project_id: uuid.UUID) -> bool:
 
 def can_access_asset(db: Session, asset: Asset, user: User) -> bool:
     """Check if user can access the asset via any path."""
-    # 1. Asset creator
+    # 1. Superadmin has unrestricted access
+    if user.is_superadmin:
+        return True
+
+    # 2. Asset creator
     if asset.created_by == user.id:
         return True
 
