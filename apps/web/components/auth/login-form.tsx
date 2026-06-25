@@ -8,9 +8,9 @@ import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import type { VerifyCodeResponse, AuthTokens } from '@/types'
+import type { VerifyCodeResponse } from '@/types'
 
-type Step = 'email' | 'code' | 'password' | 'classic'
+type Step = 'email' | 'code'
 
 export function LoginForm() {
   const router = useRouter()
@@ -19,16 +19,8 @@ export function LoginForm() {
   const [emailError, setEmailError] = useState('')
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [codeError, setCodeError] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
   const [generalError, setGeneralError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // Classic login fields
-  const [classicEmail, setClassicEmail] = useState('')
-  const [classicPassword, setClassicPassword] = useState('')
-  const [classicError, setClassicError] = useState('')
 
   const codeRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -120,14 +112,9 @@ export function LoginForm() {
         code: codeStr,
       })
 
-      if (res.needs_password) {
-        setStep('password')
-      } else {
-        setTokens(res.access_token, res.refresh_token)
-        await useAuthStore.getState().fetchUser()
-        const user = useAuthStore.getState().user
-        router.replace('/projects')
-      }
+      setTokens(res.access_token, res.refresh_token)
+      await useAuthStore.getState().fetchUser()
+      router.replace('/projects')
     } catch (err) {
       if (err instanceof ApiError) {
         setCodeError(err.detail)
@@ -151,176 +138,7 @@ export function LoginForm() {
     await submitCode(codeStr)
   }
 
-  // ─── Step 3: Set password ────────────────────────────────────────────────
-
-  async function handleSetPassword(e: React.FormEvent) {
-    e.preventDefault()
-    setPasswordError('')
-    setGeneralError('')
-
-    if (!password) {
-      setPasswordError('Password is required')
-      return
-    }
-    if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters')
-      return
-    }
-    if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await api.post<AuthTokens>('/auth/set-password', {
-        email,
-        code: code.join(''),
-        password,
-      })
-      setTokens(res.access_token, res.refresh_token)
-      await useAuthStore.getState().fetchUser()
-      const u = useAuthStore.getState().user
-      router.replace('/projects')
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setGeneralError(err.detail)
-      } else {
-        setGeneralError('Something went wrong. Please try again.')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ─── Classic login ───────────────────────────────────────────────────────
-
-  async function handleClassicLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setClassicError('')
-
-    if (!classicEmail || !classicPassword) {
-      setClassicError('Email and password are required')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await api.post<AuthTokens>('/auth/login', {
-        email: classicEmail,
-        password: classicPassword,
-      })
-      setTokens(res.access_token, res.refresh_token)
-      await useAuthStore.getState().fetchUser()
-      const u = useAuthStore.getState().user
-      router.replace('/projects')
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setClassicError(err.detail)
-      } else {
-        setClassicError('Invalid email or password')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // ─── Render ──────────────────────────────────────────────────────────────
-
-  if (step === 'classic') {
-    return (
-      <div className="animate-slide-up">
-        <div className="mb-8">
-          <h1 className="text-xl font-semibold text-text-primary mb-1">Sign in with password</h1>
-          <p className="text-sm text-text-secondary">Enter your email and password to continue.</p>
-        </div>
-
-        <form onSubmit={handleClassicLogin} className="flex flex-col gap-4">
-          {classicError && (
-            <div className="rounded-md border border-status-error/30 bg-status-error/10 px-3 py-2.5 text-sm text-status-error">
-              {classicError}
-            </div>
-          )}
-
-          <Input
-            label="Email address"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            value={classicEmail}
-            onChange={(e) => setClassicEmail(e.target.value)}
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Your password"
-            autoComplete="current-password"
-            value={classicPassword}
-            onChange={(e) => setClassicPassword(e.target.value)}
-          />
-
-          <Button type="submit" size="lg" loading={loading} className="mt-2 w-full">
-            Sign in
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => { setStep('email'); setClassicError('') }}
-            className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-          >
-            Back to magic link
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (step === 'password') {
-    return (
-      <div className="animate-slide-up">
-        <div className="mb-8">
-          <h1 className="text-xl font-semibold text-text-primary mb-1">Create your password</h1>
-          <p className="text-sm text-text-secondary">
-            Set a password to secure your account going forward.
-          </p>
-        </div>
-
-        <form onSubmit={handleSetPassword} className="flex flex-col gap-4">
-          {generalError && (
-            <div className="rounded-md border border-status-error/30 bg-status-error/10 px-3 py-2.5 text-sm text-status-error">
-              {generalError}
-            </div>
-          )}
-
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Min. 8 characters"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setPasswordError('') }}
-            error={passwordError}
-          />
-
-          <Input
-            label="Confirm password"
-            type="password"
-            placeholder="Repeat password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          <Button type="submit" size="lg" loading={loading} className="mt-2 w-full">
-            Set password &amp; continue
-          </Button>
-        </form>
-      </div>
-    )
-  }
 
   if (step === 'code') {
     return (
@@ -409,16 +227,6 @@ export function LoginForm() {
           Send magic code
         </Button>
       </form>
-
-      <div className="mt-6 text-center">
-        <button
-          type="button"
-          onClick={() => { setStep('classic'); setGeneralError('') }}
-          className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-        >
-          Sign in with password instead
-        </button>
-      </div>
     </div>
   )
 }

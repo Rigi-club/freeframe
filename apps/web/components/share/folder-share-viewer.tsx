@@ -643,7 +643,7 @@ function ShareCommentInput({ token, assetId, onCommentPosted }: ShareCommentInpu
         <button
           onClick={handleSubmit}
           disabled={submitting || !body.trim()}
-          className="h-8 px-3 rounded-md bg-accent text-text-primary text-xs font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors shrink-0"
+          className="h-8 px-3 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors shrink-0"
         >
           {submitting ? '...' : 'Post'}
         </button>
