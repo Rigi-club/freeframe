@@ -30,7 +30,7 @@ import {
   FileText,
   Code2,
 } from "lucide-react";
-import { cn, formatTime, formatRelativeTime } from "@/lib/utils";
+import { cn, formatTime, formatRelativeTime, copyToClipboard } from "@/lib/utils";
 import { useReviewStore } from "@/stores/review-store";
 import type { CommentWithReplies } from "@/hooks/use-comments";
 
@@ -208,7 +208,7 @@ function CommentMenu({
                     url = new URL(window.location.href);
                   }
                   url.searchParams.set("commentId", commentId);
-                  navigator.clipboard.writeText(url.toString());
+                  copyToClipboard(url.toString());
                   setOpen(false);
                 }}
               >

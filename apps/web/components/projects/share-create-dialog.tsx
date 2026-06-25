@@ -24,7 +24,7 @@ import {
   LayoutGrid,
 } from 'lucide-react'
 import * as Switch from '@radix-ui/react-switch'
-import { cn, endOfDayISO } from '@/lib/utils'
+import { cn, endOfDayISO, copyToClipboard } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import type { AssetResponse, Folder, ShareLink, ShareLinkAppearance } from '@/types'
@@ -83,12 +83,9 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(text)
+      await copyToClipboard(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback
-    }
   }
 
   return (
@@ -717,7 +714,7 @@ function LinkCreatedPhase({ result, allResults, onSelectResult, onDone, onAdvanc
           <span className="flex-1 truncate font-mono text-xs text-text-primary">{shareUrl}</span>
           <button
             onClick={async () => {
-              try { await navigator.clipboard.writeText(shareUrl) } catch {}
+              await copyToClipboard(shareUrl)
             }}
             className="text-text-tertiary hover:text-text-primary transition-colors shrink-0"
           >

@@ -102,3 +102,30 @@ export function endOfDayISO(dateStr: string): string {
   d.setHours(23, 59, 59, 999)
   return d.toISOString()
 }
+
+/**
+ * Copy text to clipboard with execCommand fallback for HTTP/non-secure contexts.
+ * Returns true on success, false on failure.
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      // fall through to execCommand
+    }
+  }
+  // Fallback: create a temporary textarea and use execCommand
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  try {
+    return document.execCommand('copy')
+  } finally {
+    textarea.remove()
+  }
+}

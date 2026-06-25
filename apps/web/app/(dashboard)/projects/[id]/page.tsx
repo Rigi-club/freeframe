@@ -25,7 +25,7 @@ import {
   ExternalLink,
   Users,
 } from "lucide-react";
-import { cn, formatRelativeTime, formatBytes } from "@/lib/utils";
+import { cn, formatRelativeTime, formatBytes, copyToClipboard } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -553,7 +553,7 @@ export default function ProjectDetailPage() {
                           <DropdownMenu.Item
                             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
                             onSelect={() =>
-                              navigator.clipboard.writeText(
+                              copyToClipboard(
                                 `${window.location.origin}/share/${link.token}`
                               )
                             }

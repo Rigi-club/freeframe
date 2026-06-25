@@ -4,7 +4,7 @@ import * as React from "react";
 import useSWR, { mutate } from "swr";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Users, Plus, X, Shield, Link2, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, copyToClipboard } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -205,7 +205,7 @@ export default function AdminPage() {
   const handleCopyInviteLink = (u: User) => {
     if (!u.invite_token) return;
     const link = `${window.location.origin}/invite/${u.invite_token}`;
-    navigator.clipboard.writeText(link);
+    copyToClipboard(link);
     setCopiedId(u.id);
     setTimeout(() => setCopiedId(null), 2000);
   };
