@@ -1,4 +1,4 @@
-# FreeFrame
+# Studio
 
 **Self-hostable, open-source media review platform. A collaborative alternative to Frame.io.**
 
@@ -6,7 +6,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](docker-compose.prod.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing.md)
 
-FreeFrame gives production houses and creative teams a self-hosted platform for reviewing video, image, and audio assets with frame-accurate commenting, annotations, and approval workflows. Your media stays on your infrastructure.
+Studio gives production houses and creative teams a self-hosted platform for reviewing video, image, and audio assets with frame-accurate commenting, annotations, and approval workflows. Your media stays on your infrastructure.
 
 ---
 
@@ -37,7 +37,7 @@ cp .env.example .env
 docker compose -f docker-compose.dev.yml up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to access FreeFrame. The first user to sign up becomes the super admin.
+Open [http://localhost:3000](http://localhost:3000) to access Studio. The first user to sign up becomes the super admin.
 
 **Services running in dev:**
 
@@ -136,6 +136,6 @@ Have questions? Need help?
 [![Instagram](https://img.shields.io/badge/Instagram-%23E4405F.svg?style=for-the-badge&logo=Instagram&logoColor=white)](https://www.instagram.com/techie_butler/)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/techiebutler/)
 
-Star the repo if FreeFrame is useful to you!
+Star the repo if Studio is useful to you!
 
 </div>

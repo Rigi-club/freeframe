@@ -13,7 +13,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FreeFrame",
+  title: "Studio",
   description: "Collaborative media review and approval platform",
 };
 

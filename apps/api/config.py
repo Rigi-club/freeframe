@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Find .env file - check current dir, then project root
 # __file__ = apps/api/config.py, so parent.parent = project root
 def _find_env_file() -> str:
-    project_root = Path(__file__).parent.parent.parent  # freeframe/
+    project_root = Path(__file__).parent.parent.parent  # studio/
     candidates = [
         Path(".env"),
         Path(".env.local"),
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     database_url: str
     redis_url: str
     s3_storage: str = "minio"  # "s3" for AWS S3, "minio" for local MinIO
-    s3_bucket: str = "freeframe"
+    s3_bucket: str = "studio"
     s3_endpoint: str = "http://minio:9000"
     s3_access_key: str = "minioadmin"
     s3_secret_key: str = "minioadmin"
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     # If mail_provider is "smtp", uses standard SMTP with smtp_* settings
     mail_provider: str = "ses"  # "ses" or "smtp"
     mail_from_address: str = "noreply@example.com"
-    mail_from_name: str = "FreeFrame"
+    mail_from_name: str = "Studio"
     
     # AWS SES settings
     aws_mail_access_key_id: str | None = None

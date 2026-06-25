@@ -9,7 +9,7 @@ except ImportError:
     from config import settings
 
 celery_app = Celery(
-    "freeframe",
+    "studio",
     broker=settings.redis_url,
     backend=settings.redis_url,
     include=[

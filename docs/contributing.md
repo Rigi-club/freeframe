@@ -1,4 +1,4 @@
-# Contributing to FreeFrame
+# Contributing to Studio
 
 Thanks for your interest in contributing! This guide will help you get set up for development.
 
@@ -26,7 +26,7 @@ cp .env.example .env
 # 3. Start the development environment
 docker compose -f docker-compose.dev.yml up --build
 
-# 4. Open FreeFrame
+# 4. Open Studio
 open http://localhost:3000
 ```
 

@@ -1,5 +1,5 @@
 # ============================================================
-# FreeFrame — Production Docker Compose
+# Studio — Production Docker Compose
 # ============================================================
 # Usage:
 #   cp .env.example .env.prod        # configure your settings
@@ -38,7 +38,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-freeframe}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-studio}"]
       interval: 10s
       timeout: 5s
       retries: 5

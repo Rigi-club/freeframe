@@ -1,5 +1,5 @@
 """
-Test configuration for FreeFrame API.
+Test configuration for Studio API.
 
 Uses a mock-based database approach because the models use PostgreSQL-specific
 UUID types that are incompatible with SQLite. All DB interactions are mocked
@@ -14,9 +14,9 @@ from unittest.mock import patch, MagicMock
 
 # Set required environment variables BEFORE importing the app modules.
 # This must happen before any import of apps.api.config or apps.api.main.
-os.environ.setdefault("DATABASE_URL", "postgresql://user:pass@localhost:5432/freeframe_test")
+os.environ.setdefault("DATABASE_URL", "postgresql://user:pass@localhost:5432/studio_test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
-os.environ.setdefault("S3_BUCKET", "freeframe-test")
+os.environ.setdefault("S3_BUCKET", "studio-test")
 os.environ.setdefault("S3_ENDPOINT", "http://localhost:9000")
 os.environ.setdefault("S3_ACCESS_KEY", "testkey")
 os.environ.setdefault("S3_SECRET_KEY", "testsecret")

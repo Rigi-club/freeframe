@@ -1,12 +1,12 @@
 # Architecture Overview
 
-This document explains how FreeFrame's components work together.
+This document explains how Studio's components work together.
 
 ---
 
 ## System Overview
 
-FreeFrame is a monorepo with two main applications and supporting infrastructure:
+Studio is a monorepo with two main applications and supporting infrastructure:
 
 ```
                          ┌──────────────┐
@@ -164,7 +164,7 @@ Guest users (via share links) use the `GuestUser` table — they provide email +
 
 ## Real-Time Updates (SSE)
 
-FreeFrame uses **Server-Sent Events** (not WebSockets) for real-time updates. A single SSE endpoint per project streams all events:
+Studio uses **Server-Sent Events** (not WebSockets) for real-time updates. A single SSE endpoint per project streams all events:
 
 ```
 GET /events/{project_id}

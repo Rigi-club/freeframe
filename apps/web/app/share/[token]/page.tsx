@@ -724,7 +724,7 @@ function ShareViewer({
       .finally(() => setStreamLoading(false))
   }, [token, asset.asset_type, asset.stream_url, asset.id])
 
-  const displayName = shareName || branding?.custom_title || 'FreeFrame'
+  const displayName = shareName || branding?.custom_title || 'Studio'
 
   return (
     <div className="absolute inset-0 flex flex-col bg-zinc-950 text-white overflow-hidden">

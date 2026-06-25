@@ -1,5 +1,5 @@
 {
-  "name": "freeframe",
+  "name": "studio",
   "private": true,
   "workspaces": [
     "apps/*",

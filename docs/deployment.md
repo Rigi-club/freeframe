@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This guide covers deploying FreeFrame to a production server using Docker Compose.
+This guide covers deploying Studio to a production server using Docker Compose.
 
 ---
 
@@ -23,7 +23,7 @@ This guide covers deploying FreeFrame to a production server using Docker Compos
 
 ## Deployment Options
 
-FreeFrame runs anywhere Docker is available. Here are common hosting options:
+Studio runs anywhere Docker is available. Here are common hosting options:
 
 ### VPS / Cloud VM (Simplest)
 
@@ -54,7 +54,7 @@ For teams that want managed databases and less maintenance. Use external Postgre
 
 ### Bare Metal / On-Premise
 
-FreeFrame is fully self-contained. Install Docker on any Linux server (Ubuntu 22.04+ recommended) and follow the Quick Setup. Ideal for organizations that require media to stay on their own hardware.
+Studio is fully self-contained. Install Docker on any Linux server (Ubuntu 22.04+ recommended) and follow the Quick Setup. Ideal for organizations that require media to stay on their own hardware.
 
 ---
 
@@ -86,13 +86,13 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 docker compose --env-file .env.prod -f docker-compose.prod.yml ps
 ```
 
-FreeFrame is now running on **port 80**. The first user to sign up becomes the super admin via the setup wizard.
+Studio is now running on **port 80**. The first user to sign up becomes the super admin via the setup wizard.
 
 ---
 
 ## SSL / TLS Setup
 
-FreeFrame uses **Traefik** as its reverse proxy, which can automatically provision and renew **Let's Encrypt** SSL certificates with zero manual setup.
+Studio uses **Traefik** as its reverse proxy, which can automatically provision and renew **Let's Encrypt** SSL certificates with zero manual setup.
 
 ### Enabling SSL
 
@@ -119,16 +119,16 @@ That's it. Traefik will:
 
 ### Without SSL (HTTP only)
 
-If you don't set `DOMAIN` and `ACME_EMAIL`, FreeFrame runs on **HTTP port 80** only. This is fine for:
+If you don't set `DOMAIN` and `ACME_EMAIL`, Studio runs on **HTTP port 80** only. This is fine for:
 - Local testing of the production build
 - Running behind an external reverse proxy that handles SSL
 
 ### Behind an External Reverse Proxy (Cloudflare, Caddy, etc.)
 
-If FreeFrame sits behind another proxy that already handles SSL:
+If Studio sits behind another proxy that already handles SSL:
 
 1. Don't set `DOMAIN` / `ACME_EMAIL` — let Traefik run in HTTP mode
-2. Point your external proxy to FreeFrame's port 80
+2. Point your external proxy to Studio's port 80
 3. Ensure the proxy forwards these headers: `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`
 4. For **Cloudflare**: set SSL mode to "Full"
 5. Set `FRONTEND_URL` in `.env.prod` to your `https://` URL
@@ -137,7 +137,7 @@ If FreeFrame sits behind another proxy that already handles SSL:
 
 ## Bring Your Own Infrastructure
 
-FreeFrame's Docker Compose includes PostgreSQL and Redis by default, but you can use external managed services instead.
+Studio's Docker Compose includes PostgreSQL and Redis by default, but you can use external managed services instead.
 
 ### External Database (PostgreSQL)
 
@@ -188,7 +188,7 @@ For **non-AWS providers**, also set the endpoint:
 | DigitalOcean Spaces | `https://<region>.digitaloceanspaces.com` |
 | MinIO (self-hosted) | `http://your-minio-host:9000` |
 
-Make sure your bucket has CORS configured to allow requests from your FreeFrame domain.
+Make sure your bucket has CORS configured to allow requests from your Studio domain.
 
 ### External SMTP
 
@@ -200,7 +200,7 @@ Configure in `.env.prod`:
 ```
 MAIL_PROVIDER=smtp
 MAIL_FROM_ADDRESS=noreply@your-domain.com
-MAIL_FROM_NAME=FreeFrame
+MAIL_FROM_NAME=Studio
 SMTP_HOST=smtp.mailgun.org
 SMTP_PORT=587
 SMTP_USER=your-smtp-user
@@ -212,7 +212,7 @@ SMTP_USE_TLS=true
 ```
 MAIL_PROVIDER=ses
 MAIL_FROM_ADDRESS=noreply@your-domain.com
-MAIL_FROM_NAME=FreeFrame
+MAIL_FROM_NAME=Studio
 AWS_MAIL_ACCESS_KEY_ID=YOUR_KEY
 AWS_MAIL_SECRET_ACCESS_KEY=YOUR_SECRET
 AWS_MAIL_REGION=us-east-1
@@ -232,7 +232,7 @@ All environment variables are documented in [`.env.example`](../.env.example). K
 | `S3_BUCKET` | S3 bucket name | (required) |
 | `S3_ENDPOINT` | Custom S3 endpoint (non-AWS) | (empty = AWS) |
 | `JWT_SECRET` | Auth token signing key | (required, generate with `openssl rand -hex 64`) |
-| `FRONTEND_URL` | Your FreeFrame URL (with https://) | (required) |
+| `FRONTEND_URL` | Your Studio URL (with https://) | (required) |
 | `DOMAIN` | Your domain for auto SSL | (optional) |
 | `ACME_EMAIL` | Email for Let's Encrypt notifications | (optional) |
 | `MAIL_PROVIDER` | `smtp` or `ses` | `smtp` |

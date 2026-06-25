@@ -5,8 +5,8 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from ..database import get_db
 from ..schemas.auth import (
-    RegisterRequest, LoginRequest, TokenResponse,
-    RefreshRequest, UserResponse, InviteRequest,
+    LoginRequest, TokenResponse,
+    RefreshRequest, UserResponse,
     SendMagicCodeRequest, SendMagicCodeResponse,
     VerifyMagicCodeRequest, SetPasswordRequest,
     AcceptInviteRequest, InviteInfoResponse,
@@ -20,7 +20,7 @@ from ..services.redis_service import (
     generate_magic_code, store_magic_code, verify_magic_code as redis_verify_magic_code,
     MAGIC_CODE_EXPIRY_SECONDS,
 )
-from ..tasks.email_tasks import send_magic_code_email, send_invite_email
+from ..tasks.email_tasks import send_magic_code_email
 from ..tasks.celery_app import send_task_safe
 from ..models.user import User, UserStatus
 from ..middleware.auth import get_current_user
@@ -44,23 +44,10 @@ def send_magic_code(body: SendMagicCodeRequest, db: Session = Depends(get_db)):
     - If user doesn't exist: create pending user and send code
     """
     user = get_user_by_email(db, body.email)
-    
+
     if not user:
-        # Check if this is the first user (becomes super admin)
-        user_count = db.query(User).filter(User.deleted_at.is_(None)).count()
-        is_first_user = user_count == 0
-        
-        # Create new user in pending_verification status
-        user = User(
-            email=body.email,
-            name=body.email.split("@")[0],  # Temporary name from email
-            status=UserStatus.pending_verification,
-            email_verified=False,
-            is_superadmin=is_first_user,  # First user becomes super admin
-        )
-        db.add(user)
-        db.commit()
-    
+        raise HTTPException(status_code=403, detail="No account found. Contact an admin to get invited.")
+
     # Generate and store magic code in Redis
     code = generate_magic_code()
     store_magic_code(body.email, code)
@@ -177,22 +164,9 @@ def accept_invite(body: AcceptInviteRequest, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(body: RegisterRequest, db: Session = Depends(get_db)):
-    """Register with email + password (legacy, prefer magic code flow)."""
-    if get_user_by_email(db, body.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    user = User(
-        email=body.email,
-        name=body.name,
-        password_hash=hash_password(body.password),
-        status=UserStatus.active,
-        email_verified=False,  # Not verified until magic code
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+@router.post("/register", status_code=status.HTTP_403_FORBIDDEN)
+def register():
+    raise HTTPException(status_code=403, detail="Self-registration is disabled. Contact an admin to get invited.")
 
 
 @router.post("/login", response_model=TokenResponse)

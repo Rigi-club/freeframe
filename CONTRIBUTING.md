@@ -1,4 +1,4 @@
-# Contributing to FreeFrame
+# Contributing to Studio
 
 Thanks for your interest in contributing! See the full guide:
 

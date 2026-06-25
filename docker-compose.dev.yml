@@ -2,15 +2,15 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: freeframe
-      POSTGRES_PASSWORD: freeframe
-      POSTGRES_DB: freeframe
+      POSTGRES_USER: studio
+      POSTGRES_PASSWORD: studio
+      POSTGRES_DB: studio
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U freeframe"]
+      test: ["CMD-SHELL", "pg_isready -U studio"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -56,8 +56,8 @@ services:
     entrypoint: >
       /bin/sh -c "
       mc alias set local http://minio:9000 minioadmin minioadmin;
-      mc mb --ignore-existing local/freeframe;
-      mc anonymous set download local/freeframe;
+      mc mb --ignore-existing local/studio;
+      mc anonymous set download local/studio;
       exit 0;
       "
 
@@ -70,14 +70,14 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://freeframe:freeframe@postgres:5432/freeframe
+      DATABASE_URL: postgresql://studio:studio@postgres:5432/studio
       REDIS_URL: redis://redis:6379/0
       # Storage: "minio" for local MinIO (dev), "s3" for AWS S3 (prod)
       S3_STORAGE: minio
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
       S3_ENDPOINT: http://minio:9000
-      S3_BUCKET: freeframe
+      S3_BUCKET: studio
       S3_REGION: us-east-1
       S3_PUBLIC_ENDPOINT: http://localhost:9000
       USE_ORIGINAL_VIDEOS: ${USE_ORIGINAL_VIDEOS:-false}
@@ -101,13 +101,13 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://freeframe:freeframe@postgres:5432/freeframe
+      DATABASE_URL: postgresql://studio:studio@postgres:5432/studio
       REDIS_URL: redis://redis:6379/0
       S3_STORAGE: minio
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
       S3_ENDPOINT: http://minio:9000
-      S3_BUCKET: freeframe
+      S3_BUCKET: studio
       S3_REGION: us-east-1
       USE_ORIGINAL_VIDEOS: ${USE_ORIGINAL_VIDEOS:-false}
     depends_on:
@@ -129,13 +129,13 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://freeframe:freeframe@postgres:5432/freeframe
+      DATABASE_URL: postgresql://studio:studio@postgres:5432/studio
       REDIS_URL: redis://redis:6379/0
       S3_STORAGE: minio
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
       S3_ENDPOINT: http://minio:9000
-      S3_BUCKET: freeframe
+      S3_BUCKET: studio
       S3_REGION: us-east-1
     depends_on:
       redis:
