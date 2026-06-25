@@ -684,6 +684,7 @@ function FieldRow({
 
 interface ShareViewerProps {
   token: string
+  shareSession?: string | null
   asset: Asset & { thumbnail_url?: string; stream_url?: string }
   permission: SharePermission
   allowDownload: boolean
@@ -694,6 +695,7 @@ interface ShareViewerProps {
 
 function ShareViewer({
   token,
+  shareSession,
   asset,
   permission,
   allowDownload,
@@ -714,7 +716,8 @@ function ShareViewer({
     }
     if (asset.asset_type !== 'video' && asset.asset_type !== 'audio') return
     setStreamLoading(true)
-    fetch(`${API_URL}/share/${token}/stream/${asset.id}`)
+    const sp = shareSession ? `?share_session=${encodeURIComponent(shareSession)}` : ''
+    fetch(`${API_URL}/share/${token}/stream/${asset.id}${sp}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.stream_url) setStreamUrl(data.stream_url)
@@ -722,7 +725,7 @@ function ShareViewer({
       })
       .catch(() => null)
       .finally(() => setStreamLoading(false))
-  }, [token, asset.asset_type, asset.stream_url, asset.id])
+  }, [token, shareSession, asset.asset_type, asset.stream_url, asset.id])
 
   const displayName = shareName || branding?.custom_title || 'Studio'
 
@@ -1077,6 +1080,7 @@ export default function SharePage({
   return (
     <ShareViewer
       token={token}
+      shareSession={shareSession}
       asset={state.asset}
       permission={state.permission}
       allowDownload={state.allowDownload}

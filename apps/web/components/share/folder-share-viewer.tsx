@@ -1150,7 +1150,7 @@ export function FolderShareViewer({
       })
 
     return () => { cancelled = true }
-  }, [token, currentSubfolderId])
+  }, [token, currentSubfolderId, sessionParam])
 
   async function loadMore() {
     const nextPage = page + 1

@@ -271,11 +271,16 @@ def validate_share_link_endpoint(
             hashed_bytes = link.password_hash.encode('utf-8')
             if not bcrypt.checkpw(plain_bytes, hashed_bytes):
                 raise HTTPException(status_code=403, detail="Incorrect password")
-        except ValueError:
+        except HTTPException:
+            raise
+        except Exception:
             raise HTTPException(status_code=403, detail="Incorrect password")
         # Password verified — create a session so subsequent requests skip re-verification
         session_id = secrets.token_urlsafe(32)
-        create_share_session(token, session_id)
+        try:
+            create_share_session(token, session_id)
+        except Exception:
+            raise HTTPException(status_code=503, detail="Session service unavailable, please try again")
 
     if log_open:
         actor_email = current_user.email if current_user else "anonymous"
