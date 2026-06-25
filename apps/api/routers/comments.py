@@ -345,8 +345,8 @@ def delete_comment(
     comment = db.query(Comment).filter(Comment.id == comment_id, Comment.deleted_at.is_(None)).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    # Allow comment owner or project owner to delete
-    if comment.author_id != current_user.id:
+    # Allow comment owner, project owner, or superadmin to delete
+    if comment.author_id != current_user.id and not current_user.is_superadmin:
         asset = _get_asset(db, comment.asset_id)
         member = db.query(ProjectMember).filter(
             ProjectMember.project_id == asset.project_id,

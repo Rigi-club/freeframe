@@ -114,6 +114,8 @@ def _process_audio(db, asset, version, media_file, s3, output_prefix):
 
 
 def _process_image(db, asset, version, media_file, s3, output_prefix):
+    if settings.use_original_videos:
+        return
     from packages.transcoder.image_processor import process_image
     result = process_image(s3, settings.s3_bucket, media_file.s3_key_raw, output_prefix)
     media_file.s3_key_processed = result.get("webp_key")

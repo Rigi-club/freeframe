@@ -73,12 +73,12 @@ export default function ProjectDetailPage() {
     React.useState<AssetResponse | null>(null);
   const [shareLinksExpanded, setShareLinksExpanded] = React.useState(true);
   const [rightTab, setRightTab] = React.useState<"comments" | "fields">(
-    "comments",
+    "comments"
   );
   const { rightPanelOpen } = useViewStore();
 
   const [currentFolderId, setCurrentFolderId] = React.useState<string | null>(
-    searchParams.get("folder") || null,
+    searchParams.get("folder") || null
   );
   const [showTrash, setShowTrash] = React.useState(false);
   const [showShareLinks, setShowShareLinks] = React.useState(false);
@@ -95,9 +95,10 @@ export default function ProjectDetailPage() {
     id: string;
     name: string;
   } | null>(null);
-  const [shareDialogPreselectedItems, setShareDialogPreselectedItems] = React.useState<
-    { type: "folder" | "asset"; id: string; name: string }[]
-  >([]);
+  const [shareDialogPreselectedItems, setShareDialogPreselectedItems] =
+    React.useState<{ type: "folder" | "asset"; id: string; name: string }[]>(
+      []
+    );
   const [shareDialogResult, setShareDialogResult] = React.useState<{
     token: string;
     title: string;
@@ -113,8 +114,10 @@ export default function ProjectDetailPage() {
     assetIds: string[];
     folderIds: string[];
   } | null>(null);
-  const [assetToRename, setAssetToRename] = React.useState<AssetResponse | null>(null);
-  const [assetToDelete, setAssetToDelete] = React.useState<AssetResponse | null>(null);
+  const [assetToRename, setAssetToRename] =
+    React.useState<AssetResponse | null>(null);
+  const [assetToDelete, setAssetToDelete] =
+    React.useState<AssetResponse | null>(null);
 
   const { files: uploadFiles, startUpload } = useUploadStore();
   const { user } = useAuthStore();
@@ -153,7 +156,7 @@ export default function ProjectDetailPage() {
 
   const { data: project, isLoading: loadingProject } = useSWR<Project>(
     `/projects/${projectId}`,
-    () => api.get<Project>(`/projects/${projectId}`),
+    () => api.get<Project>(`/projects/${projectId}`)
   );
 
   // Register project name for header breadcrumb + page title
@@ -174,19 +177,22 @@ export default function ProjectDetailPage() {
     function findPath(
       nodes: typeof tree,
       targetId: string,
-      trail: { id: string; name: string }[],
+      trail: { id: string; name: string }[]
     ): { id: string; name: string }[] | null {
       for (const node of nodes) {
-        const newTrail = [...trail, { id: node.id, name: node.name }]
-        if (node.id === targetId) return newTrail
-        const found = findPath(node.children, targetId, newTrail)
-        if (found) return found
+        const newTrail = [...trail, { id: node.id, name: node.name }];
+        if (node.id === targetId) return newTrail;
+        const found = findPath(node.children, targetId, newTrail);
+        if (found) return found;
       }
-      return null
+      return null;
     }
-    const path = findPath(tree, currentFolderId, []) ?? []
+    const path = findPath(tree, currentFolderId, []) ?? [];
     setExtraCrumbs(
-      path.map((f) => ({ label: f.name, href: `/projects/${projectId}?folder=${f.id}` }))
+      path.map((f) => ({
+        label: f.name,
+        href: `/projects/${projectId}?folder=${f.id}`,
+      }))
     );
   }, [currentFolderId, tree, projectId, setExtraCrumbs]);
 
@@ -199,7 +205,7 @@ export default function ProjectDetailPage() {
     mutate: mutateAssets,
   } = useSWR<AssetResponse[]>(
     showTrash ? null : `/projects/${projectId}/assets?${folderParam}`,
-    (key: string) => api.get<AssetResponse[]>(key),
+    (key: string) => api.get<AssetResponse[]>(key)
   );
 
   // Subfolders for current view
@@ -207,7 +213,7 @@ export default function ProjectDetailPage() {
     showTrash
       ? null
       : `/projects/${projectId}/folders?parent_id=${currentFolderId ?? "root"}`,
-    (key: string) => api.get<Folder[]>(key),
+    (key: string) => api.get<Folder[]>(key)
   );
 
   const thumbnails = React.useMemo(() => {
@@ -235,7 +241,7 @@ export default function ProjectDetailPage() {
       if (a.latest_version?.files?.length) {
         map[a.id] = a.latest_version.files.reduce(
           (sum, f) => sum + (f.file_size_bytes || 0),
-          0,
+          0
         );
       }
     }
@@ -250,7 +256,7 @@ export default function ProjectDetailPage() {
 
   const { data: authorUsers } = useSWR<User[]>(
     authorIds.length > 0 ? `/users?ids=${authorIds.join(",")}` : null,
-    () => api.get<User[]>(`/users?ids=${authorIds.join(",")}`),
+    () => api.get<User[]>(`/users?ids=${authorIds.join(",")}`)
   );
 
   const authorNames = React.useMemo(() => {
@@ -265,7 +271,7 @@ export default function ProjectDetailPage() {
 
   const { data: members } = useSWR<ProjectMember[]>(
     `/projects/${projectId}/members`,
-    () => api.get<ProjectMember[]>(`/projects/${projectId}/members`),
+    () => api.get<ProjectMember[]>(`/projects/${projectId}/members`)
   );
 
   const assigneeIds = React.useMemo(() => {
@@ -276,7 +282,7 @@ export default function ProjectDetailPage() {
 
   const { data: assigneeUsers } = useSWR<User[]>(
     assigneeIds.length > 0 ? `/users?ids=${assigneeIds.join(",")}` : null,
-    () => api.get<User[]>(`/users?ids=${assigneeIds.join(",")}`),
+    () => api.get<User[]>(`/users?ids=${assigneeIds.join(",")}`)
   );
 
   const assigneesMap: Record<string, User> = React.useMemo(() => {
@@ -315,7 +321,8 @@ export default function ProjectDetailPage() {
     } else if (assetIds.length > 0 || folderIds.length > 0) {
       // Multiple items — build preselectedItems array
       setShareDialogPreselect(null);
-      const items: { type: "folder" | "asset"; id: string; name: string }[] = [];
+      const items: { type: "folder" | "asset"; id: string; name: string }[] =
+        [];
       for (const id of assetIds) {
         const asset = assets?.find((a) => a.id === id);
         if (asset) items.push({ type: "asset", id, name: asset.name });
@@ -335,7 +342,7 @@ export default function ProjectDetailPage() {
 
   React.useEffect(() => {
     const anyComplete = uploadFiles.some(
-      (f) => f.projectId === projectId && f.status === "complete",
+      (f) => f.projectId === projectId && f.status === "complete"
     );
     if (anyComplete) {
       mutateAssets();
@@ -372,7 +379,7 @@ export default function ProjectDetailPage() {
         : `/projects/${projectId}`;
       window.history.replaceState(null, "", url);
     },
-    [projectId],
+    [projectId]
   );
 
   return (
@@ -435,159 +442,163 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Share Links section — only visible to owner/editor */}
-        {canSeeShareLinks && <div className="px-3 py-2 border-t border-border">
-          <div className="w-full flex items-center justify-between px-2 mb-1">
-            <span
-              className="text-2xs font-semibold text-text-tertiary uppercase tracking-wider cursor-pointer"
-              onClick={() => setShareLinksExpanded(!shareLinksExpanded)}
-            >
-              Share Links
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowShareLinks(false);
-                  setShowTrash(false);
-                  openShareDialog([], []);
-                }}
-                className="text-text-tertiary hover:text-text-primary transition-colors"
-                title="Create share link"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-              <button
+        {canSeeShareLinks && (
+          <div className="px-3 py-2 border-t border-border">
+            <div className="w-full flex items-center justify-between px-2 mb-1">
+              <span
+                className="text-2xs font-semibold text-text-tertiary uppercase tracking-wider cursor-pointer"
                 onClick={() => setShareLinksExpanded(!shareLinksExpanded)}
-                className="text-text-tertiary hover:text-text-primary transition-colors"
               >
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 transition-transform",
-                    !shareLinksExpanded && "-rotate-90",
-                  )}
-                />
-              </button>
+                Share Links
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowShareLinks(false);
+                    setShowTrash(false);
+                    openShareDialog([], []);
+                  }}
+                  className="text-text-tertiary hover:text-text-primary transition-colors"
+                  title="Create share link"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => setShareLinksExpanded(!shareLinksExpanded)}
+                  className="text-text-tertiary hover:text-text-primary transition-colors"
+                >
+                  <ChevronDown
+                    className={cn(
+                      "h-3 w-3 transition-transform",
+                      !shareLinksExpanded && "-rotate-90"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
-          </div>
 
-          {shareLinksExpanded && (
-            <div className="space-y-0.5">
-              <button
-                onClick={() => {
-                  setShowShareLinks(true);
-                  setSelectedShareLink(null);
-                  setShowTrash(false);
-                  setCurrentFolderId(null);
-                }}
-                className={cn(
-                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors",
-                  showShareLinks && !selectedShareLink
-                    ? "bg-bg-hover text-text-primary"
-                    : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
-                )}
-              >
-                <LinkIcon className="h-4 w-4" />
-                <span>All Share Links ({shareLinks.length})</span>
-              </button>
-              {shareLinks.map((link) => (
-                <div
-                  key={link.token}
-                  className={cn(
-                    "group w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer",
-                    selectedShareLink === link.token
-                      ? "bg-bg-hover text-text-primary"
-                      : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
-                  )}
+            {shareLinksExpanded && (
+              <div className="space-y-0.5">
+                <button
                   onClick={() => {
                     setShowShareLinks(true);
-                    setSelectedShareLink(link.token);
+                    setSelectedShareLink(null);
                     setShowTrash(false);
                     setCurrentFolderId(null);
                   }}
-                >
-                  {link.share_type === "folder" ? (
-                    <FolderIcon className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <FileText className="h-4 w-4 shrink-0" />
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors",
+                    showShareLinks && !selectedShareLink
+                      ? "bg-bg-hover text-text-primary"
+                      : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
                   )}
-                  <span className="truncate flex-1">
-                    {link.title || link.target_name}
-                  </span>
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger asChild>
-                      <button
-                        className="h-5 w-5 flex items-center justify-center rounded text-text-tertiary hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <MoreHorizontal className="h-3.5 w-3.5" />
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content
-                        className="z-50 min-w-[180px] rounded-xl border border-border bg-bg-secondary p-1 shadow-xl"
-                        sideOffset={4}
-                        align="end"
-                      >
-                        <DropdownMenu.Item
-                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
-                          onSelect={() =>
-                            window.open(
-                              `${window.location.origin}/share/${link.token}`,
-                              "_blank",
-                            )
-                          }
-                        >
-                          <ExternalLink className="h-4 w-4 text-text-tertiary" />
-                          Open Share
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
-                          onSelect={() =>
-                            navigator.clipboard.writeText(
-                              `${window.location.origin}/share/${link.token}`,
-                            )
-                          }
-                        >
-                          <LinkIcon className="h-4 w-4 text-text-tertiary" />
-                          Copy Link
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Separator className="my-1 h-px bg-border" />
-                        <DropdownMenu.Item
-                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
-                          onSelect={() =>
-                            toggleEnabled(link.token, !link.is_enabled)
-                          }
-                        >
-                          <MinusCircle className="h-4 w-4 text-text-tertiary" />
-                          {link.is_enabled ? "Disable Access" : "Enable Access"}
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-status-error hover:bg-status-error/10 cursor-pointer outline-none transition-colors"
-                          onSelect={async () => {
-                            await deleteShareLink(link.token);
-                            if (selectedShareLink === link.token)
-                              setSelectedShareLink(null);
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  <span>All Share Links ({shareLinks.length})</span>
+                </button>
+                {shareLinks.map((link) => (
+                  <div
+                    key={link.token}
+                    className={cn(
+                      "group w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer",
+                      selectedShareLink === link.token
+                        ? "bg-bg-hover text-text-primary"
+                        : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                    )}
+                    onClick={() => {
+                      setShowShareLinks(true);
+                      setSelectedShareLink(link.token);
+                      setShowTrash(false);
+                      setCurrentFolderId(null);
+                    }}
+                  >
+                    {link.share_type === "folder" ? (
+                      <FolderIcon className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <FileText className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="truncate flex-1">
+                      {link.title || link.target_name}
+                    </span>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger asChild>
+                        <button
+                          className="h-5 w-5 flex items-center justify-center rounded text-text-tertiary hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
                           }}
                         >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Root>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>}
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.Content
+                          className="z-50 min-w-[180px] rounded-xl border border-border bg-bg-secondary p-1 shadow-xl"
+                          sideOffset={4}
+                          align="end"
+                        >
+                          <DropdownMenu.Item
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
+                            onSelect={() =>
+                              window.open(
+                                `${window.location.origin}/share/${link.token}`,
+                                "_blank"
+                              )
+                            }
+                          >
+                            <ExternalLink className="h-4 w-4 text-text-tertiary" />
+                            Open Share
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Item
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
+                            onSelect={() =>
+                              navigator.clipboard.writeText(
+                                `${window.location.origin}/share/${link.token}`
+                              )
+                            }
+                          >
+                            <LinkIcon className="h-4 w-4 text-text-tertiary" />
+                            Copy Link
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Separator className="my-1 h-px bg-border" />
+                          <DropdownMenu.Item
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary cursor-pointer outline-none transition-colors"
+                            onSelect={() =>
+                              toggleEnabled(link.token, !link.is_enabled)
+                            }
+                          >
+                            <MinusCircle className="h-4 w-4 text-text-tertiary" />
+                            {link.is_enabled
+                              ? "Disable Access"
+                              : "Enable Access"}
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Item
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-status-error hover:bg-status-error/10 cursor-pointer outline-none transition-colors"
+                            onSelect={async () => {
+                              await deleteShareLink(link.token);
+                              if (selectedShareLink === link.token)
+                                setSelectedShareLink(null);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Storage indicator — matches global sidebar bottom section (p-2 + space-y-1) */}
-        {(() => {
+        {/* {(() => {
           const used = project?.storage_bytes ?? 0;
           const limit = 10 * 1024 * 1024 * 1024; // 10 GB default limit
           const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
@@ -618,7 +629,7 @@ export default function ProjectDetailPage() {
               <div className="h-5" />
             </div>
           );
-        })()}
+        })()} */}
       </div>
 
       {/* ─── Main Content ───────────────────────────────────────────────── */}
@@ -721,7 +732,7 @@ export default function ProjectDetailPage() {
               folders={subfolders ?? []}
               currentFolderId={currentFolderId}
               projectId={projectId}
-              projectName={project?.name ?? 'Project'}
+              projectName={project?.name ?? "Project"}
               folderTree={tree ?? []}
               isLoading={loadingAssets}
               assignees={assigneesMap}
@@ -777,7 +788,7 @@ export default function ProjectDetailPage() {
               onAssetDownload={async (asset) => {
                 try {
                   const data = await api.get<{ url: string }>(
-                    `/assets/${asset.id}/stream?download=true`,
+                    `/assets/${asset.id}/stream?download=true`
                   );
                   if (data?.url) {
                     const iframe = document.createElement("iframe");
@@ -788,8 +799,12 @@ export default function ProjectDetailPage() {
                   }
                 } catch {}
               }}
-              onAssetRename={(asset) => setAssetToRename(asset as AssetResponse)}
-              onAssetDelete={(asset) => setAssetToDelete(asset as AssetResponse)}
+              onAssetRename={(asset) =>
+                setAssetToRename(asset as AssetResponse)
+              }
+              onAssetDelete={(asset) =>
+                setAssetToDelete(asset as AssetResponse)
+              }
               onBulkMove={async (assetIds, folderIds, targetFolderId) => {
                 await bulkMove(assetIds, folderIds, targetFolderId);
                 mutateAssets();
@@ -811,7 +826,7 @@ export default function ProjectDetailPage() {
                 async function downloadAsset(id: string) {
                   try {
                     const data = await api.get<{ url: string }>(
-                      `/assets/${id}/stream?download=true`,
+                      `/assets/${id}/stream?download=true`
                     );
                     if (data?.url) {
                       triggerDownload(data.url);
@@ -829,7 +844,7 @@ export default function ProjectDetailPage() {
                 for (const folderId of folderIds) {
                   try {
                     const folderAssets = await api.get<AssetResponse[]>(
-                      `/projects/${projectId}/assets?folder_id=${folderId}&skip=0&limit=100`,
+                      `/projects/${projectId}/assets?folder_id=${folderId}&skip=0&limit=100`
                     );
                     for (const fa of folderAssets) {
                       await downloadAsset(fa.id);
@@ -902,12 +917,18 @@ export default function ProjectDetailPage() {
                     <>
                       <div className="rounded-lg border border-border bg-bg-tertiary">
                         <div className="px-3 py-2 text-xs font-medium text-text-tertiary border-b border-border">
-                          {pendingFiles.length} file{pendingFiles.length !== 1 ? "s" : ""} selected
+                          {pendingFiles.length} file
+                          {pendingFiles.length !== 1 ? "s" : ""} selected
                         </div>
                         <div className="max-h-40 overflow-y-auto divide-y divide-border">
                           {pendingFiles.map((f, i) => (
-                            <div key={i} className="flex items-center justify-between px-3 py-1.5">
-                              <span className="text-sm text-text-primary truncate mr-2">{f.name}</span>
+                            <div
+                              key={i}
+                              className="flex items-center justify-between px-3 py-1.5"
+                            >
+                              <span className="text-sm text-text-primary truncate mr-2">
+                                {f.name}
+                              </span>
                               <span className="text-xs text-text-tertiary shrink-0">
                                 {f.size < 1024 * 1024
                                   ? `${(f.size / 1024).toFixed(0)} KB`
@@ -962,7 +983,7 @@ export default function ProjectDetailPage() {
                     "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors border-b-2",
                     rightTab === "comments"
                       ? "border-accent text-text-primary"
-                      : "border-transparent text-text-tertiary hover:text-text-secondary",
+                      : "border-transparent text-text-tertiary hover:text-text-secondary"
                   )}
                 >
                   <MessageSquare className="h-4 w-4" />
@@ -974,7 +995,7 @@ export default function ProjectDetailPage() {
                     "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors border-b-2",
                     rightTab === "fields"
                       ? "border-accent text-text-primary"
-                      : "border-transparent text-text-tertiary hover:text-text-secondary",
+                      : "border-transparent text-text-tertiary hover:text-text-secondary"
                   )}
                 >
                   Fields
@@ -1145,7 +1166,7 @@ export default function ProjectDetailPage() {
                         onClick={async () => {
                           try {
                             const res = await api.get<{ url: string }>(
-                              `/assets/${selectedAsset.id}/stream?download=true`,
+                              `/assets/${selectedAsset.id}/stream?download=true`
                             );
                             if (res.url) {
                               const iframe = document.createElement("iframe");
@@ -1236,7 +1257,16 @@ export default function ProjectDetailPage() {
         onOpenChange={(open) => {
           if (!open) setPendingBulkDelete(null);
         }}
-        title={`Delete ${(pendingBulkDelete?.assetIds.length ?? 0) + (pendingBulkDelete?.folderIds.length ?? 0)} item${(pendingBulkDelete?.assetIds.length ?? 0) + (pendingBulkDelete?.folderIds.length ?? 0) !== 1 ? "s" : ""}?`}
+        title={`Delete ${
+          (pendingBulkDelete?.assetIds.length ?? 0) +
+          (pendingBulkDelete?.folderIds.length ?? 0)
+        } item${
+          (pendingBulkDelete?.assetIds.length ?? 0) +
+            (pendingBulkDelete?.folderIds.length ?? 0) !==
+          1
+            ? "s"
+            : ""
+        }?`}
         description="This will move the selected items to the trash. You can restore them later from Recently Deleted."
         confirmLabel="Delete"
         variant="danger"
@@ -1255,7 +1285,9 @@ export default function ProjectDetailPage() {
       {/* Rename asset dialog */}
       <NameDialog
         open={assetToRename !== null}
-        onOpenChange={(open) => { if (!open) setAssetToRename(null); }}
+        onOpenChange={(open) => {
+          if (!open) setAssetToRename(null);
+        }}
         title="Rename asset"
         defaultValue={assetToRename?.name ?? ""}
         placeholder="Asset name..."
@@ -1273,7 +1305,9 @@ export default function ProjectDetailPage() {
       {/* Delete asset confirmation */}
       <ConfirmDialog
         open={assetToDelete !== null}
-        onOpenChange={(open) => { if (!open) setAssetToDelete(null); }}
+        onOpenChange={(open) => {
+          if (!open) setAssetToDelete(null);
+        }}
         title={`Delete "${assetToDelete?.name}"?`}
         description="This will move the asset to the trash. You can restore it later from Recently Deleted."
         confirmLabel="Delete"

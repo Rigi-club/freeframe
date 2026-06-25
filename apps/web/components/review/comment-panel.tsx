@@ -26,6 +26,9 @@ import {
   Check,
   Send,
   Lock,
+  Download,
+  FileText,
+  Code2,
 } from "lucide-react";
 import { cn, formatTime, formatRelativeTime } from "@/lib/utils";
 import { useReviewStore } from "@/stores/review-store";
@@ -37,6 +40,8 @@ interface CommentPanelProps {
   comments: CommentWithReplies[];
   isLoading?: boolean;
   currentUserId?: string;
+  isAdmin?: boolean;
+  assetName?: string;
   onResolve: (commentId: string) => Promise<void>;
   onDelete: (commentId: string) => Promise<void>;
   onAddReaction: (commentId: string, emoji: string) => Promise<void>;
@@ -151,72 +156,111 @@ function Dropdown({
 
 function CommentMenu({
   isOwn,
+  canDelete,
   commentId,
   assetId,
   onEdit,
   onDelete,
 }: {
   isOwn: boolean;
+  canDelete: boolean;
   commentId: string;
   assetId?: string;
   onEdit: () => void;
   onDelete: (commentId: string) => Promise<void>;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [confirming, setConfirming] = React.useState(false);
 
-  // Only show menu for own comments — others only get emoji reactions
-  if (!isOwn) return null;
+  if (!isOwn && !canDelete) return null;
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((p) => !p)}
-        className="h-7 w-7 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary transition-colors"
-      >
-        <MoreHorizontal className="h-4 w-4" />
-      </button>
-      <Dropdown
-        open={open}
-        onClose={() => setOpen(false)}
-        align="right"
-        className="w-44"
-      >
+    <>
+      <div className="relative">
         <button
-          className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary transition-colors"
-          onClick={() => { onEdit(); setOpen(false) }}
+          onClick={() => setOpen((p) => !p)}
+          className="h-7 w-7 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary transition-colors"
         >
-          <Pencil className="h-3.5 w-3.5" />
-          Edit
+          <MoreHorizontal className="h-4 w-4" />
         </button>
-        <button
-          className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary transition-colors"
-          onClick={() => {
-            let url: URL
-            if (assetId && window.location.pathname.match(/\/projects\/[^/]+$/)) {
-              url = new URL(`${window.location.pathname}/assets/${assetId}`, window.location.origin)
-            } else {
-              url = new URL(window.location.href)
-            }
-            url.searchParams.set('commentId', commentId)
-            navigator.clipboard.writeText(url.toString())
-            setOpen(false)
-          }}
+        <Dropdown
+          open={open}
+          onClose={() => setOpen(false)}
+          align="right"
+          className="w-44"
         >
-          <Link2 className="h-3.5 w-3.5" />
-          Copy Link
-        </button>
-        <button
-          className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-red-400 hover:bg-bg-tertiary transition-colors"
-          onClick={() => {
-            onDelete(commentId);
-            setOpen(false);
-          }}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Delete
-        </button>
-      </Dropdown>
-    </div>
+          {isOwn && (
+            <>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary transition-colors"
+                onClick={() => { onEdit(); setOpen(false); }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary transition-colors"
+                onClick={() => {
+                  let url: URL;
+                  if (assetId && window.location.pathname.match(/\/projects\/[^/]+$/)) {
+                    url = new URL(`${window.location.pathname}/assets/${assetId}`, window.location.origin);
+                  } else {
+                    url = new URL(window.location.href);
+                  }
+                  url.searchParams.set("commentId", commentId);
+                  navigator.clipboard.writeText(url.toString());
+                  setOpen(false);
+                }}
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                Copy Link
+              </button>
+            </>
+          )}
+          {canDelete && (
+            <button
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-red-400 hover:bg-bg-tertiary transition-colors"
+              onClick={() => { setOpen(false); setConfirming(true); }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </button>
+          )}
+        </Dropdown>
+      </div>
+
+      {/* Confirmation dialog */}
+      {confirming && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setConfirming(false)}
+          />
+          <div className="relative rounded-xl border border-border bg-bg-elevated p-5 w-80 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-sm font-semibold text-text-primary mb-1">
+              Delete comment?
+            </h3>
+            <p className="text-xs text-text-tertiary mb-4">
+              This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setConfirming(false)}
+                className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary rounded-md border border-border hover:bg-bg-tertiary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { onDelete(commentId); setConfirming(false); }}
+                className="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -346,6 +390,7 @@ interface CommentItemProps {
   commentNumber?: number;
   depth?: number;
   currentUserId?: string;
+  isAdmin?: boolean;
   replyingTo?: string | null;
   isFocused?: boolean;
   onResolve: (commentId: string) => Promise<void>;
@@ -362,6 +407,7 @@ function CommentItem({
   commentNumber,
   depth = 0,
   currentUserId,
+  isAdmin,
   replyingTo,
   isFocused,
   onResolve,
@@ -393,6 +439,7 @@ function CommentItem({
   const authorName =
     comment.author?.name ?? comment.guest_author?.name ?? "Unknown";
   const isOwn = !!(currentUserId && comment.author_id === currentUserId);
+  const canDelete = isOwn || !!isAdmin;
   const avatarColor = getAvatarColor(authorName);
   const isReplyingHere = replyingTo === comment.id && depth === 0;
 
@@ -639,6 +686,7 @@ function CommentItem({
               <div className="opacity-0 group-hover/comment:opacity-100 transition-opacity">
                 <CommentMenu
                   isOwn={isOwn}
+                  canDelete={canDelete}
                   commentId={comment.id}
                   assetId={comment.asset_id}
                   onEdit={() => { setEditing(true); setEditBody(comment.body); }}
@@ -703,6 +751,7 @@ function CommentItem({
                   comment={reply}
                   depth={depth + 1}
                   currentUserId={currentUserId}
+                  isAdmin={isAdmin}
                   replyingTo={replyingTo}
                   onResolve={onResolve}
                   onDelete={onDelete}
@@ -746,10 +795,113 @@ const EMPTY_FILTERS: FilterState = {
 
 // ─── Comment panel ────────────────────────────────────────────────────────────
 
+// ─── Export helpers ──────────────────────────────────────────────────────────
+
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function flattenComments(list: CommentWithReplies[]): CommentWithReplies[] {
+  const result: CommentWithReplies[] = [];
+  function walk(c: CommentWithReplies) {
+    result.push(c);
+    for (const r of c.replies ?? []) walk(r);
+  }
+  for (const c of list) walk(c);
+  return result;
+}
+
+function secondsToHHMMSS(s: number): string {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
+
+function buildCSV(comments: CommentWithReplies[]): string {
+  const rows: string[][] = [["Author", "Seconds", "Timecode (HH:MM:SS)", "Comment"]];
+  for (const c of flattenComments(comments)) {
+    const author = c.author?.name ?? c.guest_author?.name ?? "Guest";
+    const secs = c.timecode_start !== null && c.timecode_start !== undefined ? String(c.timecode_start) : "";
+    const tc = c.timecode_start !== null && c.timecode_start !== undefined ? secondsToHHMMSS(c.timecode_start) : "";
+    rows.push([author, secs, tc, c.body]);
+  }
+  return rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+}
+
+function buildPremiereXML(comments: CommentWithReplies[], fps: number, name: string): string {
+  const timed = comments
+    .filter((c) => c.timecode_start !== null && c.timecode_start !== undefined)
+    .sort((a, b) => (a.timecode_start ?? 0) - (b.timecode_start ?? 0));
+
+  const markers = timed
+    .map((c) => {
+      const frame = Math.floor((c.timecode_start!) * fps);
+      const author = c.author?.name ?? c.guest_author?.name ?? "Guest";
+      const markerName = escapeXml(`${author}: ${c.body.slice(0, 80)}`);
+      const body = escapeXml(c.body);
+      return [
+        "    <marker>",
+        `      <name>${markerName}</name>`,
+        `      <comment>${body}</comment>`,
+        `      <in>${frame}</in>`,
+        "      <out>-1</out>",
+        "    </marker>",
+      ].join("\n");
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xmeml>
+<xmeml version="4">
+  <sequence>
+    <name>${escapeXml(name)} - Comments</name>
+    <duration>0</duration>
+    <rate>
+      <timebase>${fps}</timebase>
+      <ntsc>FALSE</ntsc>
+    </rate>
+    <media>
+      <video>
+        <track>
+          <enabled>TRUE</enabled>
+          <locked>FALSE</locked>
+        </track>
+      </video>
+      <audio>
+        <track>
+          <enabled>TRUE</enabled>
+          <locked>FALSE</locked>
+        </track>
+      </audio>
+    </media>
+${markers}
+  </sequence>
+</xmeml>`;
+}
+
+function triggerDownload(content: string, filename: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Comment panel ────────────────────────────────────────────────────────────
+
 export function CommentPanel({
   comments,
   isLoading,
   currentUserId,
+  isAdmin,
+  assetName,
   onResolve,
   onDelete,
   onAddReaction,
@@ -772,6 +924,8 @@ export function CommentPanel({
   const [sortMode, setSortMode] = React.useState<SortMode>("oldest");
   const [filters, setFilters] = React.useState<FilterState>(EMPTY_FILTERS);
   const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
+  const [exportOpen, setExportOpen] = React.useState(false);
+  const [xmlFps, setXmlFps] = React.useState(24);
 
   const searchRef = React.useRef<HTMLInputElement>(null);
 
@@ -1114,6 +1268,78 @@ export function CommentPanel({
             <Search className="h-4 w-4" />
           </button>
 
+          {/* Export */}
+          <div className="relative">
+            <button
+              className={cn(
+                "h-7 w-7 flex items-center justify-center rounded-md transition-colors",
+                exportOpen
+                  ? "text-accent bg-accent/10"
+                  : "text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary",
+              )}
+              title="Export comments"
+              onClick={() => {
+                setExportOpen((p) => !p);
+                setVisOpen(false);
+                setFilterOpen(false);
+                setSortOpen(false);
+              }}
+            >
+              <Download className="h-4 w-4" />
+            </button>
+            <Dropdown
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+              align="right"
+              className="w-56"
+            >
+              <div className="px-3 py-2 text-[11px] text-text-tertiary uppercase tracking-wider font-medium">
+                Export
+              </div>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary transition-colors"
+                onClick={() => {
+                  const name = (assetName ?? "comments").replace(/\s+/g, "_");
+                  triggerDownload(buildCSV(comments), `${name}_comments.csv`, "text/csv");
+                  setExportOpen(false);
+                }}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                Export CSV
+              </button>
+              <div className="border-t border-border mx-2 my-1" />
+              <div className="px-3 py-2">
+                <p className="text-[12px] text-text-secondary font-medium mb-2">Premiere Pro XML</p>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={xmlFps}
+                    onChange={(e) => setXmlFps(Number(e.target.value))}
+                    className="flex-1 rounded-md border border-border bg-bg-tertiary px-2 py-1 text-[12px] text-text-primary focus:outline-none focus:border-accent/50"
+                  >
+                    {[23.976, 24, 25, 29.97, 30, 60].map((f) => (
+                      <option key={f} value={f}>{f} fps</option>
+                    ))}
+                  </select>
+                  <button
+                    className="flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1 text-[12px] font-medium text-white hover:bg-accent/90 transition-colors whitespace-nowrap"
+                    onClick={() => {
+                      const name = (assetName ?? "comments").replace(/\s+/g, "_");
+                      triggerDownload(
+                        buildPremiereXML(topLevel, xmlFps, assetName ?? "Comments"),
+                        `${name}_premiere_markers.xml`,
+                        "application/xml",
+                      );
+                      setExportOpen(false);
+                    }}
+                  >
+                    <Code2 className="h-3 w-3" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            </Dropdown>
+          </div>
+
         </div>
       </div>
 
@@ -1180,6 +1406,7 @@ export function CommentPanel({
                 comment={comment}
                 commentNumber={index + 1}
                 currentUserId={currentUserId}
+                isAdmin={isAdmin}
                 replyingTo={replyingTo}
                 isFocused={focusedCommentId === comment.id}
                 onResolve={onResolve}
